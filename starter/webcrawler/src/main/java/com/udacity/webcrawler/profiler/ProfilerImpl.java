@@ -38,26 +38,27 @@ final class ProfilerImpl implements Profiler {
     // TODO: Use a dynamic proxy (java.lang.reflect.Proxy) to "wrap" the delegate in a
     //       ProfilingMethodInterceptor and return a dynamic proxy from this method.
     //       See https://docs.oracle.com/javase/10/docs/api/java/lang/reflect/Proxy.html.
-    
-    if(klass.getMethods().length == 0) {
+	  // # check IllegalArgumentException
+    int lengthOfMethod = klass.getMethods().length;
+    if(lengthOfMethod == 0) {
     	// check IllegalArgumentException
     	throw new IllegalArgumentException("No include a profile method.");
-    } else if(klass.getMethods().length != 0) {
+    } else if(lengthOfMethod != 0) {
     	for(Method method: klass.getDeclaredMethods()) {
-    	      if (method.getAnnotation(Profiled.class) != null) {
-    	    	  // check IllegalArgumentException
-    	    	  // do nothing
-    	      }
+    		Profiled getAnnotationOfMethod = method.getAnnotation(Profiled.class);
+    	    if (getAnnotationOfMethod != null) {
+    	    	// do nothing
     	    }
+    	}
     } else {
     	throw new IllegalArgumentException("No include a profile method.");
     }
     
       Objects.requireNonNull(klass);
-      InvocationHandler handler = new ProfilingMethodInterceptor(clock,state,delegate);
+      InvocationHandler handlerInterceptor = new ProfilingMethodInterceptor(clock,state,delegate);
       T proxy = (T) Proxy.newProxyInstance(klass.getClassLoader(),
               new Class[]{klass},
-              handler);
+              handlerInterceptor);
       return proxy;
   }
 
@@ -67,8 +68,10 @@ final class ProfilerImpl implements Profiler {
     //       path, the new data should be appended to the existing file.
 	Objects.requireNonNull(path);
 	try {
+		// check create or not to write or append
 		Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		writeData(writer);
+		// push all data
 		writer.flush();
 	} catch (Exception e ){
 		e.printStackTrace();

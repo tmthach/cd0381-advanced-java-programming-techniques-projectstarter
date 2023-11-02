@@ -39,7 +39,9 @@ final class WordCounts {
 	  return wordCounts.entrySet().stream()
 			  // sorted like priorityqueue with comparator
 	       .sorted(new WordCountComparator())
+	       // limit for loop
 	         .limit(Math.min(popularWordCount,wordCounts.size()))
+	         // change to map to return
 	           .collect(Collectors.toMap(keyOfMap -> keyOfMap.getKey(), valueOfMap -> valueOfMap.getValue(), (keyOfMap, valueOfMap) -> keyOfMap,LinkedHashMap::new));
   }
   

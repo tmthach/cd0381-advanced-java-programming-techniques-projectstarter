@@ -31,6 +31,8 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 	  
         // Invoke toString() and hashCode() directly on the property Map.
+	  // change the positon of this code for get time initial
+	  Instant startTime = clock.instant();
         try {
           return method.invoke(delegate, args); // object target
         } catch (InvocationTargetException e) {
@@ -38,10 +40,10 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
         } catch (IllegalAccessException e) {
           throw new RuntimeException(e);
         } finally {
-        	Instant start = clock.instant();
+        	
         	if (method.isAnnotationPresent(Profiled.class)){
         		// get type duration
-                Duration durationTime = Duration.between(start, clock.instant());
+                Duration durationTime = Duration.between(startTime, clock.instant());
                 state.record(delegate.getClass(), method, durationTime);
             }
 		}  

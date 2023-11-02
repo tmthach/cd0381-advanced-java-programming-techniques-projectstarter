@@ -60,13 +60,13 @@ final class ParallelWebCrawler implements WebCrawler {
   public CrawlResult crawl(List<String> startingUrls) {
 	  Instant deadline = clock.instant().plus(timeout);
 	  // map counts
-	  ConcurrentHashMap<String, Integer> counts = new ConcurrentHashMap<>();
+	  HashMap<String, Integer> counts = new HashMap<>();
 	  // set visitedUrls
-	  ConcurrentSkipListSet<String> visitedUrls = new ConcurrentSkipListSet<>();
+	  Set<String> visitedUrls = new HashSet<>();
 	  
 	  for (String url : startingUrls) {
-	      pool.invoke(new crawlInternal(url, deadline, maxDepth, counts, visitedUrls));
-	   }
+		  crawlInternal(url, deadline, maxDepth, (HashMap<String, Integer>) counts, visitedUrls);
+	  }
 	  if (counts.isEmpty()) {
 		  return new CrawlResult.Builder()
 		      .setWordCounts(counts)
@@ -78,17 +78,29 @@ final class ParallelWebCrawler implements WebCrawler {
 		    .setUrlsVisited(visitedUrls.size())
 		    .build();
   }
+  
+  private void crawlInternal(
+	      String url,
+	      Instant deadline,
+	      int maxDepth,
+	      Map<String, Integer> counts,
+	      Set<String> visitedUrls)  {
+	  
+	      pool.invoke(new RecursiveActionFunc(url, deadline, maxDepth, (HashMap<String, Integer>) counts, visitedUrls));
+	  
+  }
   //# RecursiveAction
-  private class crawlInternal extends RecursiveAction {
+  @SuppressWarnings("serial")
+private class RecursiveActionFunc extends RecursiveAction {
       private final String url;
       private final Instant deadline;
       private final int maxDepth;
-      private final ConcurrentHashMap<String, Integer> counts;
-//      private final HashMap<String, Integer> counts;
-//      private final ConcurrentSkipListSet<String> visitedUrls;
-      private final ConcurrentSkipListSet<String> visitedUrls;
-	  public crawlInternal(String url, Instant deadline, int maxDepth, 
-				ConcurrentHashMap<String, Integer> counts, ConcurrentSkipListSet<String> visitedUrls) {
+      
+      private final HashMap<String, Integer> counts;
+      private final Set<String> visitedUrls;
+      
+	  public RecursiveActionFunc(String url, Instant deadline, int maxDepth, 
+			  HashMap<String, Integer> counts, Set<String> visitedUrls) {
 		  this.url = url;
 		  this.deadline = deadline;
 		  this.maxDepth= maxDepth;
@@ -112,14 +124,13 @@ final class ParallelWebCrawler implements WebCrawler {
 		  for (ConcurrentHashMap.Entry<String, Integer> resultChild : result.getWordCounts().entrySet()) {
 			String keyResult = resultChild.getKey();
 			BiFunction<? super String, ? super Integer, ? extends Integer> bitFunction = (key,value) -> (value == null) ? resultChild.getValue(): resultChild.getValue() + value;
-//		    counts.compute(keyResult, (key,value) -> (value == null) ? resultChild.getValue(): resultChild.getValue() + value);
 			// recursive
 			counts.compute(keyResult, bitFunction);
 		  }
-		  List<crawlInternal> listSubtasks = new ArrayList<>();
+		  List<RecursiveActionFunc> listSubtasks = new ArrayList<>();
 		  // subTask add more task
 		  for (String link : result.getLinks()) {
-			  listSubtasks.add(new crawlInternal(link, deadline, maxDepth - 1, counts, visitedUrls));
+			  listSubtasks.add(new RecursiveActionFunc(link, deadline, maxDepth - 1, counts, visitedUrls));
 		  }
 		  invokeAll(listSubtasks);
 		}
