@@ -36,47 +36,13 @@ final class WordCounts {
 
     // TODO: Reimplement this method using only the Stream API and lambdas and/or method references.
 	  
-	//PriorityQueue 
-    PriorityQueue<Map.Entry<String, Integer>> sortedCounts =
-        new PriorityQueue<>(wordCounts.size(), new WordCountComparator());
-    
-    sortedCounts.addAll(wordCounts.entrySet()); // mean get string from the map wordCounts
-    
-    //innit
-    Map<String, Integer> topCounts = new LinkedHashMap<>();
-    
-    //for to check element 
-    for (int i = 0; i < Math.min(popularWordCount, wordCounts.size()); i++) {
-    	
-      Map.Entry<String, Integer> entry = sortedCounts.poll();// poll() get head and delete this head
-      
-      //
-      topCounts.put(entry.getKey(), entry.getValue());
-    }
-    return topCounts;
-    
-//    return wordCounts.entrySet().stream()
-////    		.sorted((o1, o2)->o1.getItem().getValue().compareTo(o2.getItem().getValue()))
-//    		.sorted((o1, o2) -> compare(o1, o2))
-//    		.collect(Collectors.toMap(Map.Entry::getKey,
-//                    e -> e.getValue()
-//                    .stream()
-//                    .mapToInt(Vote::getVoteValue)
-//                    .sum()))
-//    		;
+	  return wordCounts.entrySet().stream()
+			  // sorted like priorityqueue with comparator
+	       .sorted(new WordCountComparator())
+	         .limit(Math.min(popularWordCount,wordCounts.size()))
+	           .collect(Collectors.toMap(keyOfMap -> keyOfMap.getKey(), valueOfMap -> valueOfMap.getValue(), (keyOfMap, valueOfMap) -> keyOfMap,LinkedHashMap::new));
   }
   
-  static Map<String, Integer> supportFunc(String string, Integer stringInt,int sizeWordCounts, int popularWordCount) {
-	  
-	  
-	  Map<String, Integer> topCounts = new LinkedHashMap<>();
-	  for (int i = 0; i < Math.min(popularWordCount, sizeWordCounts); i++) {
-	      //
-	      topCounts.put(string, stringInt);
-	  }
-	  
-	  return topCounts;
-  }
   /**
    * A {@link Comparator} that sorts word count pairs correctly:
    *

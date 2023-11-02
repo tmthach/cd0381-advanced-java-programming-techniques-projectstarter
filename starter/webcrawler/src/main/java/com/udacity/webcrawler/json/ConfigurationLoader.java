@@ -30,12 +30,15 @@ public final class ConfigurationLoader {
    */
   public CrawlerConfiguration load() {
     // TODO: Fill in this method.
+      CrawlerConfiguration crawlerConfiguration = null;
 	  try(Reader reader = Files.newBufferedReader(path)){
-		  return read(reader);
-	  } catch (IOException e) {
+		  crawlerConfiguration = ConfigurationLoader.read(reader);
+      		reader.close();
+	  } catch (IOException | NullPointerException e) {
 		  e.getLocalizedMessage();
 		  return null;
 	  }
+	  return crawlerConfiguration;
 //	  this line can comment - video 00:32:00
 //    return new CrawlerConfiguration.Builder().build();
   }
@@ -51,15 +54,14 @@ public final class ConfigurationLoader {
     Objects.requireNonNull(reader);
     // TODO: Fill in this method
     ObjectMapper objectMap = new ObjectMapper();
-    objectMap.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
-    
-    CrawlerConfiguration.Builder crawlerConfigutationBuilder = null;
-    try { 
-    	crawlerConfigutationBuilder = objectMap.readValue(reader, CrawlerConfiguration.Builder.class);
-    	return crawlerConfigutationBuilder.build();
-    } catch (IOException e) {
-    	e.getLocalizedMessage();
-    	return null;
-    }
+    CrawlerConfiguration crawlerConfiguration = null;
+    try {
+    	objectMap.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
+        crawlerConfiguration = objectMap.readValue(reader, CrawlerConfiguration.Builder.class).build();
+      } catch (NullPointerException e) {
+        e.printStackTrace();
+      } finally {
+        return crawlerConfiguration;
+      }
   }
 }

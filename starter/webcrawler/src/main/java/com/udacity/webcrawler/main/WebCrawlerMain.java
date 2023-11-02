@@ -16,6 +16,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 public final class WebCrawlerMain {
@@ -39,22 +40,27 @@ public final class WebCrawlerMain {
     CrawlResultWriter resultWriter = new CrawlResultWriter(result);
     // TODO: Write the crawl results to a JSON file (or System.out if the file name is empty)
     
-//    if (config.getResultPath() != null) {
-    if (!config.getResultPath().equals("") || (config.getResultPath() != null) ) {
-    	System.out.println(config.getResultPath());
-    	String fileName = config.getResultPath();
-    	Path path = Path.of(fileName);
-    	resultWriter.write(path);
-    	// 
-    	Writer out = new BufferedWriter(new OutputStreamWriter(System.out));
-//    	Writer out1 = new BufferedWriter(new OutputStreamWriter());
-    	resultWriter.write(out);
-    	System.out.println("true");
-    } else {
-    	System.out.println("false");
+    if(!config.getResultPath().isEmpty())
+    {
+      Path path = Paths.get(config.getResultPath());
+      resultWriter.write(path);
     }
-    
+    else {
+      Writer outputWriter = new OutputStreamWriter(System.out);
+      resultWriter.write(outputWriter);
+      outputWriter.flush();
+    }
     // TODO: Write the profile data to a text file (or System.out if the file name is empty)
+    if(!config.getProfileOutputPath().isEmpty())
+    {
+      Path path = Paths.get(config.getProfileOutputPath());
+      profiler.writeData(path);
+    }
+    else {
+      Writer outputWriter = new OutputStreamWriter(System.out);
+      profiler.writeData(outputWriter);
+      outputWriter.flush();
+    }
   }
 
   public static void main(String[] args) throws Exception {
@@ -64,9 +70,7 @@ public final class WebCrawlerMain {
     }
 
     CrawlerConfiguration config = new ConfigurationLoader(Path.of(args[0])).load();
-    // test 
-    //src/main/config/sample_config_sequential.json
-//    CrawlerConfiguration config = new ConfigurationLoader(Path.of("src/main/config/sample_config_sequential.json")).load();
+    
     new WebCrawlerMain(config).run();
   }
 }

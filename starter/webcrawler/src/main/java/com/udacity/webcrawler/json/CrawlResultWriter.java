@@ -60,8 +60,9 @@ public final class CrawlResultWriter {
     ObjectMapper objectMap = new ObjectMapper();
     
     try {
-		objectMap.writeValue(writer, CrawlerConfiguration.Builder.class);
-		objectMap.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+    	objectMap.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+		objectMap.writeValue(writer, result);
+		
 	} catch (StreamWriteException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
