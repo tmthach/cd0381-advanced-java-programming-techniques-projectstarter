@@ -3,6 +3,7 @@ package com.udacity.webcrawler.json;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -33,18 +34,25 @@ public final class CrawlResultWriter {
    * should be appended to it.
    *
    * @param path the file path where the crawl result data should be written.
+ * @throws IOException 
    */
-  public void write(Path path) {
+  public void write(Path path) throws IOException {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(path);
     // TODO: Fill in this method.
-    Writer writer;
-	try {
-		writer = Files.newBufferedWriter(path);
+    Writer  writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+    try {
+    	
 		write(writer);
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	} finally {
+		if (writer != null) {
+			try {
+				writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
   }
 

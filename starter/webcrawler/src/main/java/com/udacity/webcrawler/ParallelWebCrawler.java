@@ -114,7 +114,7 @@ private class RecursiveActionFunc extends RecursiveAction {
 		      return;
 		    }
 		  }
-		  if (maxDepth == 0 || clock.instant().isAfter(deadline) || visitedUrls.contains(url)) {
+		  if (maxDepth == 0 || clock.instant().isAfter(deadline) || visitedUrls.contains(url) || !visitedUrls.add(url)) {
 		    return;
 		  }
 		  
